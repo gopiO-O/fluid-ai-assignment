@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Application Dashboard</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 50px auto;
+        }
+
+        /* Application Status */
+
+        .status-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 25px;
+        }
+
+        .status-title {
+            font-size: 15px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .status-value {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .online {
+            color: #16a34a;
+        }
+
+        .offline {
+            color: #dc2626;
+        }
+
+        .status-indicator {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Database */
+
+        .database-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .database-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .database-status {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .database-connected {
+            background: #ecfdf5;
+            color: #15803d;
+        }
+
+        .database-error {
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+        /* Table */
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px;
+            background: #f9fafb;
+            color: #6b7280;
+            font-size: 13px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .role {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #eff6ff;
+            color: #2563eb;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 25px;
+            color: #6b7280;
+        }
+
+        .error {
+            text-align: center;
+            padding: 25px;
+            color: #dc2626;
+        }
+
+        /* Mobile */
+
+        @media (max-width: 600px) {
+
+            .container {
+                width: 94%;
+                margin: 25px auto;
+            }
+
+            .status-card,
+            .database-card {
+                padding: 18px;
+            }
+
+            .status-value {
+                font-size: 22px;
+            }
+
+            .database-title {
+                font-size: 19px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- APPLICATION STATUS -->
+
+    <div class="status-card">
+
+        <div class="status-title">
+            Application Status
+        </div>
+
+        <div
+            id="application-status"
+            class="status-value"
+        >
+            Checking...
+        </div>
+
+        <div
+            id="status-indicator"
+            class="status-indicator"
+        >
+            ● Checking
+        </div>
+
+    </div>
+
+
+    <!-- MYSQL USERS -->
+
+    <div class="database-card">
+
+        <div class="database-title">
+            MySQL Database — Users
+        </div>
+
+
+        <div
+            id="database-status"
+            class="database-status"
+        >
+            Checking database connection...
+        </div>
+
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            ID
+                        </th>
+
+                        <th>
+                            Name
+                        </th>
+
+                        <th>
+                            Role
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="users-table">
+
+                    <tr>
+
+                        <td
+                            colspan="3"
+                            class="loading"
+                        >
+                            Loading users...
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /*
+     * Check application health
+     */
+
+    fetch("/health")
+
+        .then(response => {
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            const status =
+                document.getElementById(
+                    "application-status"
+                );
+
+            const indicator =
+                document.getElementById(
+                    "status-indicator"
+                );
+
+
+            if (data.status === "healthy") {
+
+                status.textContent =
+                    "Healthy";
+
+                status.className =
+                    "status-value online";
+
+                indicator.textContent =
+                    "● ONLINE";
+
+                indicator.className =
+                    "status-indicator online";
+
+            }
+
+            else {
+
+                status.textContent =
+                    "Unhealthy";
+
+                status.className =
+                    "status-value offline";
+
+                indicator.textContent =
+                    "● OFFLINE";
+
+                indicator.className =
+                    "status-indicator offline";
+
+            }
+
+        })
+
+        .catch(() => {
+
+            const status =
+                document.getElementById(
+                    "application-status"
+                );
+
+            const indicator =
+                document.getElementById(
+                    "status-indicator"
+                );
+
+
+            status.textContent =
+                "Connection Error";
+
+            status.className =
+                "status-value offline";
+
+            indicator.textContent =
+                "● OFFLINE";
+
+            indicator.className =
+                "status-indicator offline";
+
+        });
+
+
+    /*
+     * Load users from MySQL
+     */
+
+    fetch("/api/users")
+
+        .then(response => {
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            const table =
+                document.getElementById(
+                    "users-table"
+                );
+
+            const databaseStatus =
+                document.getElementById(
+                    "database-status"
+                );
+
+
+            table.innerHTML = "";
+
+
+            if (data.error) {
+
+                databaseStatus.textContent =
+                    "MySQL connection failed";
+
+                databaseStatus.className =
+                    "database-status database-error";
+
+
+                table.innerHTML = `
+
+                    <tr>
+
+                        <td
+                            colspan="3"
+                            class="error"
+                        >
+                            Unable to load users
+                        </td>
+
+                    </tr>
+
+                `;
+
+                return;
+
+            }
+
+
+            databaseStatus.textContent =
+                "MySQL Connected — " +
+                data.users.length +
+                " users found";
+
+            databaseStatus.className =
+                "database-status database-connected";
+
+
+            if (data.users.length === 0) {
+
+                table.innerHTML = `
+
+                    <tr>
+
+                        <td
+                            colspan="3"
+                            class="loading"
+                        >
+                            No users found
+                        </td>
+
+                    </tr>
+
+                `;
+
+                return;
+
+            }
+
+
+            data.users.forEach(user => {
+
+                const row =
+                    document.createElement("tr");
+
+
+                row.innerHTML = `
+
+                    <td>
+                        ${user.id}
+                    </td>
+
+                    <td>
+                        ${user.name}
+                    </td>
+
+                    <td>
+                        <span class="role">
+                            ${user.role}
+                        </span>
+                    </td>
+
+                `;
+
+
+                table.appendChild(row);
+
+            });
+
+        })
+
+        .catch(() => {
+
+            document.getElementById(
+                "database-status"
+            ).textContent =
+                "MySQL connection failed";
+
+            document.getElementById(
+                "database-status"
+            ).className =
+                "database-status database-error";
+
+
+            document.getElementById(
+                "users-table"
+            ).innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="3"
+                        class="error"
+                    >
+                        Unable to connect to database
+                    </td>
+
+                </tr>
+
+            `;
+
+        });
+
+</script>
+
+
+</body>
+
+</html>
