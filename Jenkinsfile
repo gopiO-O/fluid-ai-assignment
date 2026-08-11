@@ -9,6 +9,7 @@ pipeline {
         K8S_NAMESPACE = 'fluid-ai'
         DEPLOYMENT_NAME = 'flask-app'
         CONTAINER_NAME = 'flask-app'
+	KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
 
     stages {
