@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'gopioo/fluid-ai-app'
-        DOCKER_CREDENTIALS = 'dockerhub'
+        DOCKER_CREDENTIALS = '3eba655b-ddff-4738-bbcf-ce339eb78dd0'
         AWS_REGION = 'us-east-1'
         EKS_CLUSTER = 'Fluid-AI-project'
         K8S_NAMESPACE = 'fluid-ai'
