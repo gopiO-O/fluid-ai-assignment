@@ -9,7 +9,7 @@ pipeline {
         K8S_NAMESPACE = 'fluid-ai'
         DEPLOYMENT_NAME = 'flask-app'
         CONTAINER_NAME = 'flask-app'
-		KUBECONFIG = '/var/lib/jenkins/.kube/config'
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
 
     stages {
@@ -23,10 +23,12 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build(
+                    def dockerImage = docker.build(
                         "${DOCKER_IMAGE}:${BUILD_NUMBER}",
                         "./app"
                     )
+
+                    env.BUILT_IMAGE = "${DOCKER_IMAGE}:${BUILD_NUMBER}"
                 }
             }
         }
@@ -34,6 +36,8 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
+                    def dockerImage = docker.image("${DOCKER_IMAGE}:${BUILD_NUMBER}")
+
                     docker.withRegistry(
                         'https://index.docker.io/v1/',
                         "${DOCKER_CREDENTIALS}"
@@ -52,7 +56,8 @@ pipeline {
 
                     aws eks update-kubeconfig \
                         --region ${AWS_REGION} \
-                        --name ${EKS_CLUSTER}
+                        --name ${EKS_CLUSTER} \
+                        --kubeconfig ${KUBECONFIG}
 
                     kubectl get nodes
                 '''
@@ -62,11 +67,22 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 sh '''
+                    echo "===== Applying Kubernetes manifests ====="
+
+                    kubectl apply \
+                        -f k8s/flask-deployment.yaml \
+                        -n ${K8S_NAMESPACE}
+
+                    echo "===== Updating image ====="
+
                     kubectl set image deployment/${DEPLOYMENT_NAME} \
                         ${CONTAINER_NAME}=${DOCKER_IMAGE}:${BUILD_NUMBER} \
                         -n ${K8S_NAMESPACE}
 
-                    kubectl rollout status deployment/${DEPLOYMENT_NAME} \
+                    echo "===== Waiting for rollout ====="
+
+                    kubectl rollout status \
+                        deployment/${DEPLOYMENT_NAME} \
                         -n ${K8S_NAMESPACE} \
                         --timeout=180s
                 '''
@@ -85,6 +101,10 @@ pipeline {
                     echo "===== Deployment ====="
                     kubectl get deployment ${DEPLOYMENT_NAME} \
                         -n ${K8S_NAMESPACE}
+
+                    echo "===== Probes ====="
+                    kubectl describe deployment ${DEPLOYMENT_NAME} \
+                        -n ${K8S_NAMESPACE} | grep -A 15 -E "Liveness|Readiness|Startup" || true
                 '''
             }
         }
