@@ -49,8 +49,7 @@ spec:
                   name: flask-db-secret
                   key: DB_NAME
 
-          # Checks whether the application is alive.
-          # If this fails repeatedly, Kubernetes restarts the container.
+
           livenessProbe:
             httpGet:
               path: /health
@@ -61,8 +60,7 @@ spec:
             failureThreshold: 3
             successThreshold: 1
 
-          # Checks whether the pod is ready to receive traffic.
-          # If this fails, Kubernetes removes the pod from Service endpoints.
+
           readinessProbe:
             httpGet:
               path: /health
@@ -73,7 +71,6 @@ spec:
             failureThreshold: 3
             successThreshold: 1
 
-          # Checks whether the application has started successfully.
           startupProbe:
             httpGet:
               path: /health
