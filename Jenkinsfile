@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'gopioo/fluid-ai-app'
-        DOCKER_CREDENTIALS = '3eba655b-ddff-4738-bbcf-ce339eb78dd0'
-        AWS_REGION = 'us-east-1'
+        DOCKER_IMAGE = ''
+        DOCKER_CREDENTIALS = ''
+        AWS_REGION = ''
         EKS_CLUSTER = 'Fluid-AI-project'
         K8S_NAMESPACE = 'fluid-ai'
         DEPLOYMENT_NAME = 'flask-app'
@@ -67,13 +67,13 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 sh '''
-                    echo "===== Applying Kubernetes manifests ====="
+                    echo "Applying Kubernetes manifests"
 
                     kubectl apply \
                         -f k8s/flask-deployment.yaml \
                         -n ${K8S_NAMESPACE}
 
-                    echo "===== Updating image ====="
+                    echo "Updating image"
 
                     kubectl set image deployment/${DEPLOYMENT_NAME} \
                         ${CONTAINER_NAME}=${DOCKER_IMAGE}:${BUILD_NUMBER} \
@@ -92,17 +92,17 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 sh '''
-                    echo "===== Pods ====="
+                    echo "Pods"
                     kubectl get pods -n ${K8S_NAMESPACE}
 
-                    echo "===== Services ====="
+                    echo "Services"
                     kubectl get svc -n ${K8S_NAMESPACE}
 
-                    echo "===== Deployment ====="
+                    echo "Deployment"
                     kubectl get deployment ${DEPLOYMENT_NAME} \
                         -n ${K8S_NAMESPACE}
 
-                    echo "===== Probes ====="
+                    echo "Probes"
                     kubectl describe deployment ${DEPLOYMENT_NAME} \
                         -n ${K8S_NAMESPACE} | grep -A 15 -E "Liveness|Readiness|Startup" || true
                 '''
@@ -112,11 +112,11 @@ pipeline {
 
     post {
         success {
-            echo '✅ Fluid AI deployment completed successfully!'
+            echo 'Deployment completed successfully!'
         }
 
         failure {
-            echo '❌ Fluid AI deployment failed. Check the Jenkins console output.'
+            echo 'Deployment failed.'
         }
     }
 }
