@@ -31,7 +31,7 @@
             margin: 50px auto;
         }
 
-        /* Application Status */
+    
 
         .status-card {
             background: white;
@@ -66,7 +66,7 @@
             font-weight: bold;
         }
 
-        /* Database */
+     
 
         .database-card {
             background: white;
@@ -98,7 +98,7 @@
             color: #b91c1c;
         }
 
-        /* Table */
+      
 
         .table-container {
             overflow-x: auto;
@@ -149,7 +149,7 @@
             color: #dc2626;
         }
 
-        /* Mobile */
+     
 
         @media (max-width: 600px) {
 
@@ -183,7 +183,7 @@
 <div class="container">
 
 
-    <!-- APPLICATION STATUS -->
+
 
     <div class="status-card">
 
@@ -208,7 +208,7 @@
     </div>
 
 
-    <!-- MYSQL USERS -->
+   
 
     <div class="database-card">
 
@@ -275,10 +275,6 @@
 
 
 <script>
-
-    /*
-     * Check application health
-     */
 
     fetch("/health")
 
@@ -363,9 +359,7 @@
         });
 
 
-    /*
-     * Load users from MySQL
-     */
+
 
     fetch("/api/users")
 
